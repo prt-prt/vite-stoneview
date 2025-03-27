@@ -3,6 +3,7 @@ import { useState } from 'react';
 interface Camera {
     id: string;
     url: string;
+    order: number;
 }
 
 interface ConfigPanelProps {
@@ -23,10 +24,51 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
         );
     };
 
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, camera: Camera) => {
+        e.dataTransfer.setData('text/plain', camera.id);
+        e.currentTarget.classList.add('dragging');
+    };
+
+    const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+        e.currentTarget.classList.remove('dragging');
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.currentTarget.classList.remove('drag-over');
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetCamera: Camera) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        const draggedId = e.dataTransfer.getData('text/plain');
+        const draggedCamera = localCameras.find(c => c.id === draggedId);
+
+        if (!draggedCamera || draggedCamera.id === targetCamera.id) return;
+
+        const updatedCameras = localCameras.map(cam => {
+            if (cam.id === draggedId) {
+                return { ...cam, order: targetCamera.order };
+            }
+            if (cam.id === targetCamera.id) {
+                return { ...cam, order: draggedCamera.order };
+            }
+            return cam;
+        });
+
+        setLocalCameras(updatedCameras);
+    };
+
     const handleSave = () => {
         onSave(localCameras);
         onClose();
     };
+
+    const sortedCameras = [...localCameras].sort((a, b) => a.order - b.order);
 
     return (
         <>
@@ -34,10 +76,21 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
                 {isOpen ? 'Close' : 'Configure IPs'}
             </button>
             <div className={`config-panel ${isOpen ? 'open' : ''}`}>
-                <h2>Camera IP Configuration</h2>
+                <div className="config-panel-header">
+                    <h2>Camera Configuration</h2>
+                </div>
                 <div className="camera-list">
-                    {localCameras.map(camera => (
-                        <div key={camera.id} className="camera-input">
+                    {sortedCameras.map(camera => (
+                        <div
+                            key={camera.id}
+                            className="camera-input"
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, camera)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, camera)}
+                        >
                             <label>{camera.id}</label>
                             <input
                                 type="text"
@@ -48,9 +101,11 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
                         </div>
                     ))}
                 </div>
-                <button className="save-button" onClick={handleSave}>
-                    Save Changes
-                </button>
+                <div className="config-panel-footer">
+                    <button className="save-button" onClick={handleSave}>
+                        Save Changes
+                    </button>
+                </div>
             </div>
         </>
     );
