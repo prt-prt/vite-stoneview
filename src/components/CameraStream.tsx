@@ -15,6 +15,7 @@ export const CameraStream = ({ id, url, isFullscreen = false }: CameraStreamProp
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const frameCountRef = useRef(0);
     const lastFrameTimeRef = useRef(Date.now());
+    const streamTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     useEffect(() => {
         const img = imgRef.current;
@@ -39,6 +40,19 @@ export const CameraStream = ({ id, url, isFullscreen = false }: CameraStreamProp
 
             // Update timestamp
             setLastUpdate(new Date());
+
+            // Clear any existing timeout
+            if (streamTimeoutRef.current) {
+                clearTimeout(streamTimeoutRef.current);
+            }
+
+            // Set a timeout to check if the stream is still active
+            streamTimeoutRef.current = window.setTimeout(() => {
+                if (img.complete && img.naturalWidth === 0) {
+                    setError('Stream disconnected');
+                    setStatus('offline');
+                }
+            }, 5000);
         };
 
         const handleError = () => {
@@ -47,11 +61,15 @@ export const CameraStream = ({ id, url, isFullscreen = false }: CameraStreamProp
             setStatus('offline');
         };
 
+        // Add a timestamp to the URL to prevent caching
+        const timestamp = new Date().getTime();
+        const streamUrl = `${url}${url.includes('?') ? '&' : '?'}_=${timestamp}`;
+
         img.addEventListener('load', handleLoad);
         img.addEventListener('error', handleError);
 
         // Set the MJPEG stream URL
-        img.src = url;
+        img.src = streamUrl;
 
         // Update FPS every second
         const fpsInterval = setInterval(() => {
@@ -61,10 +79,18 @@ export const CameraStream = ({ id, url, isFullscreen = false }: CameraStreamProp
 
         // Cleanup function
         return () => {
-            img.src = '';
+            // Clear timeouts and intervals
+            if (streamTimeoutRef.current) {
+                clearTimeout(streamTimeoutRef.current);
+            }
+            clearInterval(fpsInterval);
+
+            // Remove event listeners
             img.removeEventListener('load', handleLoad);
             img.removeEventListener('error', handleError);
-            clearInterval(fpsInterval);
+
+            // Stop the stream by setting src to empty string
+            img.src = '';
         };
     }, [url]);
 
