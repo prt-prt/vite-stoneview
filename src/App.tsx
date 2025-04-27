@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { CameraStream } from './components/CameraStream'
 import { ConfigPanel } from './components/ConfigPanel'
+import { MqttConfig } from './components/MqttConfig'
+import { mqttService, extractIpFromMessage } from './services/mqtt'
+import { Toaster, toast } from 'react-hot-toast'
 
 interface Camera {
   id: string;
@@ -29,10 +32,49 @@ function App() {
   });
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [fullscreenCamera, setFullscreenCamera] = useState<Camera | null>(null);
+  const [mqttStatus, setMqttStatus] = useState<string>('disconnected');
 
   // Save cameras to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('cameras', JSON.stringify(cameras));
+  }, [cameras]);
+
+  // Handle MQTT messages and extract IPs
+  useEffect(() => {
+    // Set up MQTT message handler
+    mqttService.onMessage((topic, message) => {
+      const ip = extractIpFromMessage(message);
+
+      if (ip) {
+        // Check if this IP is already in our list
+        const existingCamera = cameras.find(cam => cam.url.includes(ip));
+
+        if (!existingCamera) {
+          // Add new camera with the discovered IP
+          const newCameraId = `CAM-${String(cameras.length + 1).padStart(3, '0')}`;
+          const newCamera: Camera = {
+            id: newCameraId,
+            url: `http://${ip}/stream`,
+            order: cameras.length
+          };
+
+          setCameras(prevCameras => [...prevCameras, newCamera]);
+          toast.success(`New camera detected: ${newCameraId} (${ip})`, {
+            duration: 5000,
+            icon: '📷'
+          });
+        } else {
+          toast(`Camera with IP ${ip} already exists`, {
+            duration: 3000,
+            icon: 'ℹ️'
+          });
+        }
+      } else {
+        toast.error('Received MQTT message, but no IP found', { duration: 3000 });
+      }
+    });
+
+    // No cleanup needed, the MQTT service manages its own lifecycle
   }, [cameras]);
 
   const handleSaveCameras = (newCameras: Camera[]) => {
@@ -46,6 +88,10 @@ function App() {
 
   const exitFullscreen = () => {
     setFullscreenCamera(null);
+  };
+
+  const handleMqttStatusChange = (status: string) => {
+    setMqttStatus(status);
   };
 
   // Add keyboard event listener for Escape key
@@ -65,6 +111,12 @@ function App() {
   return (
     <div className="container">
       <h1>StoneView</h1>
+
+      {/* MQTT Connection Status Indicator */}
+      <div className={`mqtt-indicator ${mqttStatus}`}>
+        MQTT: {mqttStatus}
+      </div>
+
       {fullscreenCamera ? (
         <div className="fullscreen-container">
           <button className="exit-fullscreen" onClick={exitFullscreen}>
@@ -90,11 +142,28 @@ function App() {
           ))}
         </div>
       )}
+
+      {/* MQTT Configuration Panel */}
+      <MqttConfig onConnectionStatusChange={handleMqttStatusChange} />
+
+      {/* Camera Configuration Panel */}
       <ConfigPanel
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(!isConfigOpen)}
         cameras={cameras}
         onSave={handleSaveCameras}
+      />
+
+      {/* Toast Container */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          }
+        }}
       />
     </div>
   )

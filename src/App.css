@@ -355,3 +355,175 @@ h1 {
   outline: none;
   border-color: #4dabf7;
 }
+
+/* MQTT Styles */
+.mqtt-config {
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background-color: #292929;
+  max-width: 400px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.mqtt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: #333;
+  cursor: pointer;
+}
+
+.mqtt-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.mqtt-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.mqtt-status.disconnected {
+  background-color: #f44336;
+  color: white;
+}
+
+.mqtt-status.connecting {
+  background-color: #ff9800;
+  color: white;
+}
+
+.mqtt-status.connected {
+  background-color: #4caf50;
+  color: white;
+}
+
+.mqtt-status.error {
+  background-color: #9c27b0;
+  color: white;
+}
+
+.mqtt-connect-btn {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background-color: #2196f3;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mqtt-connect-btn:hover {
+  background-color: #0b7dda;
+}
+
+.mqtt-connect-btn.connected {
+  background-color: #f44336;
+}
+
+.mqtt-connect-btn.connected:hover {
+  background-color: #d32f2f;
+}
+
+.mqtt-form {
+  padding: 1rem;
+  background-color: #292929;
+}
+
+.mqtt-form .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.mqtt-form label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  color: #ccc;
+}
+
+.mqtt-form input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #444;
+  border-radius: 0.25rem;
+  background-color: #333;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.mqtt-form input:disabled {
+  background-color: #222;
+  color: #777;
+}
+
+.mqtt-save-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mqtt-save-btn:hover {
+  background-color: #45a049;
+}
+
+.mqtt-save-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+/* MQTT Status Indicator */
+.mqtt-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.mqtt-indicator.disconnected {
+  background-color: #f44336;
+  color: white;
+}
+
+.mqtt-indicator.connecting {
+  background-color: #ff9800;
+  color: white;
+}
+
+.mqtt-indicator.connected {
+  background-color: #4caf50;
+  color: white;
+}
+
+.mqtt-indicator.error {
+  background-color: #9c27b0;
+  color: white;
+}
+
+.mqtt-form .form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #999;
+  font-style: italic;
+}
