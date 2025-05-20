@@ -43,7 +43,6 @@ class MqttService {
                 this.connectionStatus = 'connected';
                 console.log('[MQTT] Connected to broker:', this.config.brokerUrl);
                 toast.success('Connected to MQTT broker');
-                this.subscribe();
             });
 
             this.client.on('error', (error) => {
@@ -68,39 +67,6 @@ class MqttService {
         }
 
         return this;
-    }
-
-    subscribe(topic: string = this.config.topic) {
-        if (!this.client?.connected) {
-            console.warn('[MQTT] Cannot subscribe: client not connected');
-            return;
-        }
-
-        this.client.subscribe(topic, (err) => {
-            if (err) {
-                console.error('[MQTT] Subscription error:', err);
-            } else {
-                console.log(`[MQTT] Subscribed to topic: ${topic}`);
-            }
-        });
-
-        return this;
-    }
-
-    publish(topic: string, message: string) {
-        if (!this.client?.connected) {
-            console.warn('[MQTT] Cannot publish: client not connected');
-            return false;
-        }
-
-        try {
-            console.log(`[MQTT] Publishing to ${topic}:`, message);
-            this.client.publish(topic, message);
-            return true;
-        } catch (error) {
-            console.error('[MQTT] Error publishing message:', error);
-            return false;
-        }
     }
 
     disconnect() {

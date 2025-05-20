@@ -68,18 +68,19 @@ export const TilingLayout = ({ cameras, onCameraClick }: TilingLayoutProps) => {
         setTiles([setEvenSizes(root)]);
     }, [cameras]);
 
-    const renderTile = (tile: Tile) => {
+    const renderTile = (tile: Tile, isRoot = false) => {
         const style: React.CSSProperties = {
             width: '100%',
             height: '100%',
             display: 'flex',
             flexDirection: tile.split === 'vertical' ? 'row' : 'column',
-            position: 'relative'
+            position: 'relative',
+            gap: '4px',
         };
 
         if (tile.split) {
             return (
-                <div key={tile.id} style={style}>
+                <div key={tile.id} style={style} className={isRoot ? 'tile-container' : ''}>
                     {tile.children.map((child) => (
                         <div
                             key={child.id}
@@ -87,7 +88,9 @@ export const TilingLayout = ({ cameras, onCameraClick }: TilingLayoutProps) => {
                                 flex: child.size,
                                 position: 'relative',
                                 minWidth: '100px',
-                                minHeight: '100px'
+                                minHeight: '100px',
+                                display: 'flex',
+                                flexDirection: child.split === 'vertical' ? 'row' : 'column',
                             }}
                         >
                             {renderTile(child)}
@@ -98,7 +101,7 @@ export const TilingLayout = ({ cameras, onCameraClick }: TilingLayoutProps) => {
         }
 
         return (
-            <div key={tile.id} className="tile-container" style={style}>
+            <div key={tile.id} className="tile-container" style={{ width: '100%', height: '100%', position: 'relative', boxSizing: 'border-box' }}>
                 {tile.camera && (
                     <div
                         style={{
@@ -125,10 +128,13 @@ export const TilingLayout = ({ cameras, onCameraClick }: TilingLayoutProps) => {
                 width: '100%',
                 height: '100%',
                 minHeight: '600px',
-                position: 'relative'
+                position: 'relative',
+                gap: '4px',
+                display: 'flex',
+                flexDirection: 'column',
             }}
         >
-            {tiles.map(tile => renderTile(tile))}
+            {tiles.map(tile => renderTile(tile, true))}
         </div>
     );
 }; 

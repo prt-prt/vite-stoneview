@@ -98,11 +98,16 @@ function App() {
     };
   }, []);
 
-  // Automatically connect to MQTT broker on mount
+  // Automatically connect to MQTT broker on mount and update status
   useEffect(() => {
     mqttService.connect();
+    setMqttStatus(mqttService.getConnectionStatus());
+    const interval = setInterval(() => {
+      setMqttStatus(mqttService.getConnectionStatus());
+    }, 1000);
     return () => {
       mqttService.disconnect();
+      clearInterval(interval);
     };
   }, []);
 
@@ -116,10 +121,6 @@ function App() {
 
   const exitFullscreen = () => {
     setFullscreenCamera(null);
-  };
-
-  const handleMqttStatusChange = (status: string) => {
-    setMqttStatus(status);
   };
 
   const clearAllCameras = () => {
