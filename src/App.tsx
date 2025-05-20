@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { CameraStream } from './components/CameraStream'
 import { ConfigPanel } from './components/ConfigPanel'
-import { MqttConfig } from './components/MqttConfig'
 import { mqttService, extractIpFromMessage } from './services/mqtt'
 import { Toaster, toast } from 'react-hot-toast'
 
@@ -39,43 +38,72 @@ function App() {
     localStorage.setItem('cameras', JSON.stringify(cameras));
   }, [cameras]);
 
-  // Handle MQTT messages and extract IPs
+  // Register MQTT message handler only once on mount
   useEffect(() => {
-    // Set up MQTT message handler
-    mqttService.onMessage((topic, message) => {
-      const ip = extractIpFromMessage(message);
+    // Handler function
+    const handler = (topic: string, message: Buffer) => {
+      let ip: string | null = null;
+      try {
+        // Try to parse as JSON first
+        const msgStr = message.toString();
+        if (msgStr.trim().startsWith('{')) {
+          const obj = JSON.parse(msgStr);
+          if (obj.ip && typeof obj.ip === 'string') {
+            ip = obj.ip;
+          }
+        } else {
+          // Fallback: extract IP from plain string
+          ip = extractIpFromMessage(message);
+        }
+      } catch (e) {
+        // Fallback: extract IP from plain string
+        ip = extractIpFromMessage(message);
+      }
 
       if (ip) {
-        // Check if this IP is already in our list
-        const existingCamera = cameras.find(cam => cam.url.includes(ip));
-
-        if (!existingCamera) {
-          // Add new camera with the discovered IP
-          const newCameraId = `CAM-${String(cameras.length + 1).padStart(3, '0')}`;
-          const newCamera: Camera = {
-            id: newCameraId,
-            url: `http://${ip}/stream`,
-            order: cameras.length
-          };
-
-          setCameras(prevCameras => [...prevCameras, newCamera]);
-          toast.success(`New camera detected: ${newCameraId} (${ip})`, {
-            duration: 5000,
-            icon: '📷'
-          });
-        } else {
-          toast(`Camera with IP ${ip} already exists`, {
-            duration: 3000,
-            icon: 'ℹ️'
-          });
-        }
+        setCameras(prevCameras => {
+          const exists = prevCameras.some(cam => cam.url.includes(ip));
+          if (!exists) {
+            const newCameraId = `CAM-${String(prevCameras.length + 1).padStart(3, '0')}`;
+            const newCamera: Camera = {
+              id: newCameraId,
+              url: `http://${ip}/stream`,
+              order: prevCameras.length
+            };
+            toast.success(`New camera detected: ${newCameraId} (${ip})`, {
+              duration: 5000,
+              icon: '📷'
+            });
+            return [...prevCameras, newCamera];
+          } else {
+            // Only show toast if this is not the first camera
+            if (prevCameras.length > 0) {
+              toast(`Camera with IP ${ip} already exists`, {
+                duration: 3000,
+                icon: 'ℹ️'
+              });
+            }
+            return prevCameras;
+          }
+        });
       } else {
         toast.error('Received MQTT message, but no IP found', { duration: 3000 });
       }
-    });
+    };
+    mqttService.onMessage(handler);
+    // No built-in way to remove handler, but this prevents stacking in dev/hot reload
+    return () => {
+      // No-op: would remove handler if mqttService supported it
+    };
+  }, []);
 
-    // No cleanup needed, the MQTT service manages its own lifecycle
-  }, [cameras]);
+  // Automatically connect to MQTT broker on mount
+  useEffect(() => {
+    mqttService.connect();
+    return () => {
+      mqttService.disconnect();
+    };
+  }, []);
 
   const handleSaveCameras = (newCameras: Camera[]) => {
     setCameras(newCameras);
@@ -114,12 +142,12 @@ function App() {
 
   return (
     <div className="container">
+      {/* MQTT LED Indicator */}
+      <div className={`mqtt-led-indicator ${mqttStatus}`}></div>
       <h1>StoneView</h1>
 
-      {/* MQTT Connection Status Indicator */}
-      <div className={`mqtt-indicator ${mqttStatus}`}>
-        MQTT: {mqttStatus}
-      </div>
+      {/* MQTT Connection Status Indicator (remove this if not needed) */}
+      {/* <div className={`mqtt-indicator ${mqttStatus}`}>MQTT: {mqttStatus}</div> */}
 
       <button
         className="clear-cameras-btn"
@@ -163,9 +191,6 @@ function App() {
           ))}
         </div>
       )}
-
-      {/* MQTT Configuration Panel */}
-      <MqttConfig onConnectionStatusChange={handleMqttStatusChange} />
 
       {/* Camera Configuration Panel */}
       <ConfigPanel

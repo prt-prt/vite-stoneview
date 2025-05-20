@@ -1,7 +1,6 @@
 import mqtt, { MqttClient } from 'mqtt';
 import { toast } from 'react-hot-toast';
 
-// Default MQTT configuration matching the WebSocket port
 export const DEFAULT_MQTT_CONFIG = {
     brokerUrl: 'ws://127.0.0.1:8888',
     topic: 'esp32-cams',
@@ -30,37 +29,41 @@ class MqttService {
         }
 
         try {
+            console.log('[MQTT] Attempting to connect to broker:', this.config.brokerUrl, 'with clientId:', this.config.clientId);
             this.client = mqtt.connect(this.config.brokerUrl, {
                 clientId: this.config.clientId,
                 protocolVersion: 4,
                 clean: true,
                 keepalive: 60,
                 connectTimeout: 10000,
-                reconnectPeriod: 0, // Disable automatic reconnection
+                reconnectPeriod: 4000, // Enable automatic reconnection every 4 seconds
             });
 
             this.client.on('connect', () => {
                 this.connectionStatus = 'connected';
+                console.log('[MQTT] Connected to broker:', this.config.brokerUrl);
                 toast.success('Connected to MQTT broker');
                 this.subscribe();
             });
 
             this.client.on('error', (error) => {
-                console.error('MQTT error:', error);
+                console.error('[MQTT] Connection error:', error);
                 toast.error('MQTT connection error');
             });
 
             this.client.on('message', (topic, message) => {
+                console.log('[MQTT] Message received:', topic, message.toString());
                 this.messageHandlers.forEach(handler => handler(topic, message));
             });
 
             this.client.on('close', () => {
                 this.connectionStatus = 'disconnected';
+                console.warn('[MQTT] Disconnected from broker');
                 toast.error('Disconnected from MQTT broker');
             });
 
         } catch (error) {
-            console.error('MQTT connection error:', error);
+            console.error('[MQTT] Exception during connection:', error);
             toast.error('Failed to connect to MQTT');
         }
 
@@ -69,15 +72,15 @@ class MqttService {
 
     subscribe(topic: string = this.config.topic) {
         if (!this.client?.connected) {
-            console.warn('Cannot subscribe: MQTT client not connected');
+            console.warn('[MQTT] Cannot subscribe: client not connected');
             return;
         }
 
         this.client.subscribe(topic, (err) => {
             if (err) {
-                console.error('MQTT subscription error:', err);
+                console.error('[MQTT] Subscription error:', err);
             } else {
-                console.log(`Subscribed to ${topic}`);
+                console.log(`[MQTT] Subscribed to topic: ${topic}`);
             }
         });
 
@@ -86,21 +89,23 @@ class MqttService {
 
     publish(topic: string, message: string) {
         if (!this.client?.connected) {
-            console.warn('Cannot publish: MQTT client not connected');
+            console.warn('[MQTT] Cannot publish: client not connected');
             return false;
         }
 
         try {
+            console.log(`[MQTT] Publishing to ${topic}:`, message);
             this.client.publish(topic, message);
             return true;
         } catch (error) {
-            console.error('Error publishing message:', error);
+            console.error('[MQTT] Error publishing message:', error);
             return false;
         }
     }
 
     disconnect() {
         if (this.client) {
+            console.log('[MQTT] Disconnecting from broker');
             this.client.end();
             this.client = null;
             this.connectionStatus = 'disconnected';

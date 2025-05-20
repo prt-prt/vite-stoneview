@@ -81,6 +81,14 @@ h1 {
   font-size: 0.8rem;
   color: white;
   z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.camera-container:hover .camera-overlay {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .status-indicator {
@@ -533,4 +541,33 @@ h1 {
   font-size: 0.75rem;
   color: #999;
   font-style: italic;
+}
+
+.mqtt-led-indicator {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  background-color: #888;
+  z-index: 2000;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.mqtt-led-indicator.connected {
+  background-color: #51cf66;
+  box-shadow: 0 0 12px #51cf66;
+}
+
+.mqtt-led-indicator.connecting {
+  background-color: #ff9800;
+  box-shadow: 0 0 12px #ff9800;
+}
+
+.mqtt-led-indicator.disconnected,
+.mqtt-led-indicator.error {
+  background-color: #ff6b6b;
+  box-shadow: 0 0 12px #ff6b6b;
 }
