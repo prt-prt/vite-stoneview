@@ -630,3 +630,56 @@ h1 {
   background-color: #ff6b6b;
   box-shadow: 0 0 12px #ff6b6b;
 }
+
+.settings-hover-area {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 100px;
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.settings-glow-btn {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  font-family: monospace;
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin: 1.5rem 1.5rem 0 0;
+  padding: 0.25rem 0.75rem;
+}
+
+.settings-hover-area:hover .settings-glow-btn {
+  opacity: 1;
+}
+
+.config-panel-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3000;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.config-panel {
+  position: relative;
+  z-index: 3100;
+  box-shadow: -2px 0 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Reduce glow for config panel close button */
+.config-panel-header button[aria-label="Close settings"] {
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff !important;
+}

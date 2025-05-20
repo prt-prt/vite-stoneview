@@ -80,8 +80,27 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave, clearAllCameras 
 
     return (
         <div className={`config-panel ${isOpen ? 'open' : ''}`}>
-            <div className="config-panel-header">
+            <div className="config-panel-header" style={{ position: 'relative' }}>
                 <h2>Camera Configuration</h2>
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute',
+                        top: '1.2rem',
+                        right: '1.2rem',
+                        background: 'none',
+                        border: 'none',
+                        color: '#fff',
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        textShadow: '0 0 8px #fff, 0 0 16px #fff',
+                        zIndex: 3200
+                    }}
+                    aria-label="Close settings"
+                >
+                    ×
+                </button>
             </div>
             <div className="camera-list">
                 {sortedCameras.map(camera => (
