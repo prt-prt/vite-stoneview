@@ -356,6 +356,13 @@ h1 {
   border-color: #4dabf7;
 }
 
+.camera-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
 /* MQTT Styles */
 .mqtt-config {
   margin-top: 1rem;

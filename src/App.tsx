@@ -78,7 +78,6 @@ function App() {
   }, [cameras]);
 
   const handleSaveCameras = (newCameras: Camera[]) => {
-    // Preserve the order from the config panel
     setCameras(newCameras);
   };
 
@@ -92,6 +91,11 @@ function App() {
 
   const handleMqttStatusChange = (status: string) => {
     setMqttStatus(status);
+  };
+
+  const clearAllCameras = () => {
+    setCameras([]);
+    localStorage.setItem('cameras', JSON.stringify([]));
   };
 
   // Add keyboard event listener for Escape key
@@ -116,6 +120,23 @@ function App() {
       <div className={`mqtt-indicator ${mqttStatus}`}>
         MQTT: {mqttStatus}
       </div>
+
+      <button
+        className="clear-cameras-btn"
+        onClick={clearAllCameras}
+        style={{
+          marginBottom: '1rem',
+          padding: '0.5rem 1rem',
+          backgroundColor: '#ff6b6b',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontFamily: 'monospace'
+        }}
+      >
+        Clear All Cameras
+      </button>
 
       {fullscreenCamera ? (
         <div className="fullscreen-container">

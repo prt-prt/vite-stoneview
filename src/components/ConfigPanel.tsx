@@ -14,14 +14,21 @@ interface ConfigPanelProps {
 }
 
 export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelProps) => {
-    const [localCameras, setLocalCameras] = useState<Camera[]>(cameras);
-
     const handleUrlChange = (id: string, newUrl: string) => {
-        setLocalCameras(prev =>
-            prev.map(cam =>
-                cam.id === id ? { ...cam, url: newUrl } : cam
-            )
+        const updatedCameras = cameras.map(cam =>
+            cam.id === id ? { ...cam, url: newUrl } : cam
         );
+        onSave(updatedCameras);
+    };
+
+    const handleAddCamera = () => {
+        const newCameraId = `CAM-${String(cameras.length + 1).padStart(3, '0')}`;
+        const newCamera: Camera = {
+            id: newCameraId,
+            url: '',
+            order: cameras.length
+        };
+        onSave([...cameras, newCamera]);
     };
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, camera: Camera) => {
@@ -46,11 +53,11 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
         e.preventDefault();
         e.currentTarget.classList.remove('drag-over');
         const draggedId = e.dataTransfer.getData('text/plain');
-        const draggedCamera = localCameras.find(c => c.id === draggedId);
+        const draggedCamera = cameras.find(c => c.id === draggedId);
 
         if (!draggedCamera || draggedCamera.id === targetCamera.id) return;
 
-        const updatedCameras = localCameras.map(cam => {
+        const updatedCameras = cameras.map(cam => {
             if (cam.id === draggedId) {
                 return { ...cam, order: targetCamera.order };
             }
@@ -60,15 +67,15 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
             return cam;
         });
 
-        setLocalCameras(updatedCameras);
+        onSave(updatedCameras);
     };
 
-    const handleSave = () => {
-        onSave(localCameras);
-        onClose();
+    const handleDeleteCamera = (id: string) => {
+        const updatedCameras = cameras.filter(cam => cam.id !== id);
+        onSave(updatedCameras);
     };
 
-    const sortedCameras = [...localCameras].sort((a, b) => a.order - b.order);
+    const sortedCameras = [...cameras].sort((a, b) => a.order - b.order);
 
     return (
         <>
@@ -91,7 +98,24 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, camera)}
                         >
-                            <label>{camera.id}</label>
+                            <div className="camera-input-header">
+                                <label>{camera.id}</label>
+                                <button
+                                    className="delete-camera-btn"
+                                    onClick={() => handleDeleteCamera(camera.id)}
+                                    style={{
+                                        backgroundColor: '#ff6b6b',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '0.25rem 0.5rem',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                             <input
                                 type="text"
                                 value={camera.url}
@@ -100,10 +124,22 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
                             />
                         </div>
                     ))}
-                </div>
-                <div className="config-panel-footer">
-                    <button className="save-button" onClick={handleSave}>
-                        Save Changes
+                    <button
+                        className="add-camera-btn"
+                        onClick={handleAddCamera}
+                        style={{
+                            backgroundColor: '#4dabf7',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0.75rem',
+                            cursor: 'pointer',
+                            width: '100%',
+                            marginTop: '1rem',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        + Add Camera
                     </button>
                 </div>
             </div>
