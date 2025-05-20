@@ -11,9 +11,10 @@ interface ConfigPanelProps {
     onClose: () => void;
     cameras: Camera[];
     onSave: (cameras: Camera[]) => void;
+    clearAllCameras: () => void;
 }
 
-export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelProps) => {
+export const ConfigPanel = ({ isOpen, onClose, cameras, onSave, clearAllCameras }: ConfigPanelProps) => {
     const handleUrlChange = (id: string, newUrl: string) => {
         const updatedCameras = cameras.map(cam =>
             cam.id === id ? { ...cam, url: newUrl } : cam
@@ -78,71 +79,84 @@ export const ConfigPanel = ({ isOpen, onClose, cameras, onSave }: ConfigPanelPro
     const sortedCameras = [...cameras].sort((a, b) => a.order - b.order);
 
     return (
-        <>
-            <button className="config-button" onClick={() => onClose()}>
-                {isOpen ? 'Close' : 'Configure IPs'}
-            </button>
-            <div className={`config-panel ${isOpen ? 'open' : ''}`}>
-                <div className="config-panel-header">
-                    <h2>Camera Configuration</h2>
-                </div>
-                <div className="camera-list">
-                    {sortedCameras.map(camera => (
-                        <div
-                            key={camera.id}
-                            className="camera-input"
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, camera)}
-                            onDragEnd={handleDragEnd}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={(e) => handleDrop(e, camera)}
-                        >
-                            <div className="camera-input-header">
-                                <label>{camera.id}</label>
-                                <button
-                                    className="delete-camera-btn"
-                                    onClick={() => handleDeleteCamera(camera.id)}
-                                    style={{
-                                        backgroundColor: '#ff6b6b',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        padding: '0.25rem 0.5rem',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                            <input
-                                type="text"
-                                value={camera.url}
-                                onChange={(e) => handleUrlChange(camera.id, e.target.value)}
-                                placeholder="http://192.168.0.xxx/stream"
-                            />
-                        </div>
-                    ))}
-                    <button
-                        className="add-camera-btn"
-                        onClick={handleAddCamera}
-                        style={{
-                            backgroundColor: '#4dabf7',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            padding: '0.75rem',
-                            cursor: 'pointer',
-                            width: '100%',
-                            marginTop: '1rem',
-                            fontFamily: 'monospace'
-                        }}
-                    >
-                        + Add Camera
-                    </button>
-                </div>
+        <div className={`config-panel ${isOpen ? 'open' : ''}`}>
+            <div className="config-panel-header">
+                <h2>Camera Configuration</h2>
             </div>
-        </>
+            <div className="camera-list">
+                {sortedCameras.map(camera => (
+                    <div
+                        key={camera.id}
+                        className="camera-input"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, camera)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, camera)}
+                    >
+                        <div className="camera-input-header">
+                            <label>{camera.id}</label>
+                            <button
+                                className="delete-camera-btn"
+                                onClick={() => handleDeleteCamera(camera.id)}
+                                style={{
+                                    backgroundColor: '#ff6b6b',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    padding: '0.25rem 0.5rem',
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                        <input
+                            type="text"
+                            value={camera.url}
+                            onChange={(e) => handleUrlChange(camera.id, e.target.value)}
+                            placeholder="http://192.168.0.xxx/stream"
+                        />
+                    </div>
+                ))}
+                <button
+                    className="add-camera-btn"
+                    onClick={handleAddCamera}
+                    style={{
+                        backgroundColor: '#4dabf7',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0.75rem',
+                        cursor: 'pointer',
+                        width: '100%',
+                        marginTop: '1rem',
+                        fontFamily: 'monospace'
+                    }}
+                >
+                    + Add Camera
+                </button>
+            </div>
+            <div className="config-panel-footer">
+                <button
+                    className="clear-cameras-btn"
+                    onClick={clearAllCameras}
+                    style={{
+                        backgroundColor: '#ff6b6b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0.5rem 1rem',
+                        cursor: 'pointer',
+                        fontFamily: 'monospace',
+                        width: '100%'
+                    }}
+                >
+                    Clear All Cameras
+                </button>
+            </div>
+        </div>
     );
 }; 

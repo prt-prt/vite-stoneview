@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { CameraStream } from './components/CameraStream'
 import { ConfigPanel } from './components/ConfigPanel'
+import { TilingLayout } from './components/TilingLayout'
 import { mqttService, extractIpFromMessage } from './services/mqtt'
 import { Toaster, toast } from 'react-hot-toast'
+import { ReactComponent as SettingsIcon } from './assets/settings.svg'
 
 interface Camera {
   id: string;
@@ -146,24 +148,15 @@ function App() {
       <div className={`mqtt-led-indicator ${mqttStatus}`}></div>
       <h1>StoneView</h1>
 
-      {/* MQTT Connection Status Indicator (remove this if not needed) */}
-      {/* <div className={`mqtt-indicator ${mqttStatus}`}>MQTT: {mqttStatus}</div> */}
-
+      {/* Settings Icon Button */}
       <button
-        className="clear-cameras-btn"
-        onClick={clearAllCameras}
-        style={{
-          marginBottom: '1rem',
-          padding: '0.5rem 1rem',
-          backgroundColor: '#ff6b6b',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontFamily: 'monospace'
-        }}
+        className="config-button"
+        onClick={() => setIsConfigOpen(!isConfigOpen)}
+        style={{ position: 'fixed', right: '2rem', top: '2rem', zIndex: 100 }}
+        aria-label="Settings"
       >
-        Clear All Cameras
+        {/* Inline SVG for settings icon */}
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 5 15.4a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 16 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 8c.14.31.22.65.22 1v.09A1.65 1.65 0 0 0 21 12c0 .35-.08.69-.22 1z" /></svg>
       </button>
 
       {fullscreenCamera ? (
@@ -179,16 +172,11 @@ function App() {
           />
         </div>
       ) : (
-        <div className="grid">
-          {sortedCameras.map((camera) => (
-            <div
-              key={camera.id}
-              className="grid-item"
-              onClick={() => handleCameraClick(camera)}
-            >
-              <CameraStream id={camera.id} url={camera.url} />
-            </div>
-          ))}
+        <div style={{ width: '100%', height: 'calc(100vh - 200px)' }}>
+          <TilingLayout
+            cameras={sortedCameras}
+            onCameraClick={handleCameraClick}
+          />
         </div>
       )}
 
@@ -198,6 +186,7 @@ function App() {
         onClose={() => setIsConfigOpen(!isConfigOpen)}
         cameras={cameras}
         onSave={handleSaveCameras}
+        clearAllCameras={clearAllCameras}
       />
 
       {/* Toast Container */}
